@@ -1,29 +1,22 @@
 const express = require('express');
-const router = express.Router();
-const User = require('../models/User');
-const { getUserById, updateProfile } = require('../controllers/userController');
+const { 
+  getUserById, 
+  updateProfile, 
+  suspendUser, 
+  getAdminUsers 
+} = require('../controllers/userController');
 const auth = require('../middleware/auth');
-const upload = require('../middleware/upload');
+const authorize = require('../middleware/authorize');
+const router = express.Router();
 
+// Public route to get a user profile by ID
 router.get('/:id', getUserById);
+
+// Private route for a logged-in user to update their own profile
 router.put('/update', auth, updateProfile);
 
-router.post('/upload-profile-pic', auth, upload.single('profilePic'), async (req, res) => {
-  try {
-    if(!req.file) return res.status(400).json({ message: 'No file uploaded' });
-
-    const user = await User.findById(req.user._id);
-    // Save Cloudinary file info in user profilePic field
-    user.profilePic = {
-      url: req.file.path,
-      public_id: req.file.filename,
-    };
-    await user.save();
-
-    res.json({ message: 'Profile picture uploaded', profilePic: user.profilePic });
-  } catch (err) {
-    res.status(500).json({ message: 'Upload failed', error: err.message });
-  }
-});
+// Admin routes (require admin role)
+router.patch('/:id/suspend', auth, authorize(['admin']), suspendUser);
+router.get('/admin/users', auth, authorize(['admin']), getAdminUsers); // Admin search/filter users
 
 module.exports = router;
