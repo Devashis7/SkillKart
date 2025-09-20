@@ -26,10 +26,11 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    // Password is no longer excluded by default in schema, so no need for select('+password')
-    const user = await User.findOne({ email }); 
-    if (!user || !(await user.comparePassword(password)))
+    // Explicitly select password for login
+    const user = await User.findOne({ email }).select('+password');
+    if (!user || !(await user.comparePassword(password))) {
       return res.status(400).json({ message: 'Invalid credentials' });
+    }
     // Remove password and OTP related fields before sending user data in response
     const userResponse = user.toJSON();
     res.json({ token: generateToken(user._id), user: userResponse });

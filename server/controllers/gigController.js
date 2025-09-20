@@ -151,7 +151,7 @@ exports.updateGigStatus = async (req, res) => {
     }
 
     if (!['approved', 'rejected'].includes(status)) {
-      return res.status(400).json({ message: 'Invalid status update. Must be 'approved' or 'rejected'' });
+      return res.status(400).json({ message: "Invalid status update. Must be 'approved' or 'rejected'." });
     }
 
     gig.status = status;

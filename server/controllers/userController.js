@@ -49,7 +49,7 @@ exports.suspendUser = async (req, res) => {
     const userId = req.params.id;
 
     if (!['active', 'suspended'].includes(status)) {
-      return res.status(400).json({ message: 'Invalid status. Must be 'active' or 'suspended'.' });
+      return res.status(400).json({ message: "Invalid status. Must be 'active' or 'suspended'." });
     }
 
     const user = await User.findByIdAndUpdate(userId, { status }, { new: true });

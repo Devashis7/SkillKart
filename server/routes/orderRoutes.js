@@ -1,14 +1,19 @@
+
 const express = require('express');
+const router = express.Router();
 const { 
   getStudentOrders, 
   getClientOrders, 
   updateOrderStatus, 
   uploadDelivery, 
-  requestRevision 
+  requestRevision, 
+  createOrder 
 } = require('../controllers/orderController');
 const auth = require('../middleware/auth');
 const authorize = require('../middleware/authorize');
-const router = express.Router();
+
+// Create a new order (client books a gig)
+router.post('/', auth, authorize(['client']), createOrder);
 
 // Get orders for a specific student (student owner or admin)
 router.get('/student/:id', auth, authorize(['student', 'admin']), getStudentOrders);

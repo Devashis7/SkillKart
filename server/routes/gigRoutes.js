@@ -7,6 +7,7 @@ const {
   updateGigStatus, 
   deleteGig 
 } = require('../controllers/gigController');
+const upload = require('../middleware/upload');
 const auth = require('../middleware/auth');
 const authorize = require('../middleware/authorize'); // Assuming you have an authorize middleware for role-based access
 const router = express.Router();
@@ -16,7 +17,7 @@ router.get('/', getGigs);
 router.get('/:id', getGigById);
 
 // Student routes (requires auth and student role)
-router.post('/', auth, authorize(['student']), createGig);
+router.post('/', auth, authorize(['student']), upload.array('portfolioFiles'), createGig);
 router.put('/:id', auth, authorize(['student']), updateGig);
 router.delete('/:id', auth, authorize(['student', 'admin']), deleteGig); // Student owner or Admin can delete
 

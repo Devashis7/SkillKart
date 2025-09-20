@@ -1,3 +1,51 @@
+// @desc    Create a new order (client books a gig)
+// @route   POST /api/orders/
+// @access  Private (Client only)
+exports.createOrder = async (req, res) => {
+  try {
+    const { gigId, instructions, paymentId } = req.body;
+    if (!gigId || !paymentId) {
+      return res.status(400).json({ message: 'gigId and paymentId are required' });
+    }
+
+
+    // Find the gig and its student
+    const gig = await require('../models/Gig').findById(gigId);
+    if (!gig) {
+      return res.status(404).json({ message: 'Gig not found' });
+    }
+    if (gig.status !== 'approved') {
+      return res.status(400).json({ message: 'Gig is not approved for booking' });
+    }
+
+    // Calculate deadline
+    const now = new Date();
+    const deadline = new Date(now.getTime() + gig.deliveryTime * 24 * 60 * 60 * 1000);
+
+    const order = await require('../models/Order').create({
+      gigId,
+      clientId: req.user.id,
+      studentId: gig.studentId,
+      instructions,
+      price: gig.price,
+      deadline,
+      paymentId,
+      status: 'booked',
+    });
+
+    // Optionally: create notification for student
+    await require('../models/Notification').create({
+      userId: gig.studentId,
+      type: 'order_booked',
+      message: `You have received a new order for your gig '${gig.title}'.`,
+      link: `/student/orders/${order._id}`,
+    });
+
+    res.status(201).json({ success: true, order });
+  } catch (err) {
+    res.status(500).json({ message: 'Error creating order', error: err.message });
+  }
+};
 const Order = require('../models/Order');
 const Gig = require('../models/Gig');
 const Notification = require('../models/Notification');
