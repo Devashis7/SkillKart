@@ -14,6 +14,8 @@ const OrderDetailsPage = () => {
   const [actionLoading, setActionLoading] = useState(false);
   const [deliveryFiles, setDeliveryFiles] = useState([]);
   const [deliveryMessage, setDeliveryMessage] = useState('');
+  const [showRevisionModal, setShowRevisionModal] = useState(false);
+  const [revisionFeedback, setRevisionFeedback] = useState('');
 
   useEffect(() => {
     fetchOrderDetails();
@@ -63,6 +65,26 @@ const OrderDetailsPage = () => {
       setDeliveryMessage('');
     } catch (err) {
       setError(err.message || 'Failed to submit delivery');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleRequestRevision = async () => {
+    if (!revisionFeedback.trim()) {
+      setError('Please provide feedback for the revision request');
+      return;
+    }
+
+    try {
+      setActionLoading(true);
+      await api.requestRevision(id, { feedback: revisionFeedback });
+      await fetchOrderDetails();
+      setShowRevisionModal(false);
+      setRevisionFeedback('');
+      setError(null);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to request revision');
     } finally {
       setActionLoading(false);
     }
@@ -352,7 +374,7 @@ const OrderDetailsPage = () => {
 
                 {canRequestRevision() && (
                   <button
-                    onClick={() => updateOrderStatus('revision_requested')}
+                    onClick={() => setShowRevisionModal(true)}
                     disabled={actionLoading}
                     className="w-full bg-orange-600 hover:bg-orange-700 dark:bg-orange-700 dark:hover:bg-orange-600 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
@@ -445,6 +467,47 @@ const OrderDetailsPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Revision Request Modal */}
+      {showRevisionModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-md w-full p-6">
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+              Request Revision
+            </h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+              Please provide detailed feedback explaining what changes you'd like the freelancer to make.
+            </p>
+            <textarea
+              value={revisionFeedback}
+              onChange={(e) => setRevisionFeedback(e.target.value)}
+              placeholder="Describe the changes needed..."
+              rows="5"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
+            />
+            <div className="flex gap-3 mt-4">
+              <button
+                onClick={() => {
+                  setShowRevisionModal(false);
+                  setRevisionFeedback('');
+                  setError(null);
+                }}
+                disabled={actionLoading}
+                className="flex-1 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleRequestRevision}
+                disabled={actionLoading || !revisionFeedback.trim()}
+                className="flex-1 bg-orange-600 hover:bg-orange-700 dark:bg-orange-700 dark:hover:bg-orange-600 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {actionLoading ? 'Requesting...' : 'Request Revision'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
