@@ -62,8 +62,43 @@ exports.suspendUser = async (req, res) => {
   }
 };
 
+// @desc    Upload profile picture
+// @route   POST /api/users/upload-profile-pic
+// @access  Private (Owner only)
+exports.uploadProfilePicture = async (req, res) => {
+  try {
+    const userId = req.user.id; // From auth middleware
+    
+    // Check if file was uploaded
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    const profilePic = {
+      url: req.file.path, // Cloudinary URL
+      public_id: req.file.filename // Cloudinary public_id
+    };
+
+    const user = await User.findByIdAndUpdate(
+      userId, 
+      { profilePic }, 
+      { new: true, runValidators: true }
+    );
+
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    res.json({ 
+      success: true, 
+      user: user.toJSON(),
+      message: 'Profile picture updated successfully' 
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Upload failed', error: err.message });
+  }
+};
+
 // @desc    Get all users for Admin with search and filter
-// @route   GET /api/admin/users?search=&role=
+// @route   GET /api/users/admin/users?search=&role=
 // @access  Private (Admin only)
 exports.getAdminUsers = async (req, res) => {
   try {
@@ -102,5 +137,58 @@ exports.getAdminUsers = async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({ message: 'Error fetching users for admin', error: err.message });
+  }
+};
+
+// @desc    Delete a user (Admin only)
+// @route   DELETE /api/users/:id
+// @access  Private (Admin only)
+exports.deleteUser = async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    // Prevent admin from deleting themselves
+    if (userId === req.user.id) {
+      return res.status(400).json({ message: 'You cannot delete your own account' });
+    }
+
+    const user = await User.findByIdAndDelete(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json({ success: true, message: 'User deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ message: 'Error deleting user', error: err.message });
+  }
+};
+
+// @desc    Update user role (Admin only)
+// @route   PATCH /api/users/:id/role
+// @access  Private (Admin only)
+exports.updateUserRole = async (req, res) => {
+  try {
+    const { role } = req.body;
+    const userId = req.params.id;
+
+    if (!['student', 'client', 'admin'].includes(role)) {
+      return res.status(400).json({ message: "Invalid role. Must be 'student', 'client', or 'admin'." });
+    }
+
+    // Prevent admin from changing their own role
+    if (userId === req.user.id) {
+      return res.status(400).json({ message: 'You cannot change your own role' });
+    }
+
+    const user = await User.findByIdAndUpdate(userId, { role }, { new: true });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json({ success: true, user: user.toJSON(), message: `User role updated to ${role}` });
+  } catch (err) {
+    res.status(500).json({ message: 'Error updating user role', error: err.message });
   }
 };

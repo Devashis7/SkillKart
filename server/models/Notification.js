@@ -18,14 +18,16 @@ const notificationSchema = new mongoose.Schema({
       'revision_requested',
       'review_added',
       'user_suspended',
-  'admin_message',
-  'new_review'
+      'admin_message',
+      'new_review',
+      'contact_request'
     ],
     required: true
   },
   message: { type: String, required: true, maxlength: 500 },
   link: { type: String }, // Link to the related resource (e.g., gig, order page)
   isRead: { type: Boolean, default: false },
+  metadata: { type: mongoose.Schema.Types.Mixed }, // Additional data for specific notification types
 }, { timestamps: true });
 
 notificationSchema.index({ userId: 1, isRead: 1 });

@@ -4,10 +4,10 @@ const Gig = require('../models/Gig');
 const User = require('../models/User');
 const Notification = require('../models/Notification');
 
-// Create Payment Intent for checkout
+// Create Stripe Checkout Session for checkout
 exports.checkout = async (req, res) => {
   try {
-    const { amount, gigId, instructions } = req.body;
+    const { amount, gigId, instructions, deadline, contactInfo } = req.body;
 
     // Validate required fields
     if (!amount || !gigId) {
@@ -15,7 +15,7 @@ exports.checkout = async (req, res) => {
     }
 
     // Verify gig exists and is approved
-    const gig = await Gig.findById(gigId);
+    const gig = await Gig.findById(gigId).populate('studentId', 'name');
     if (!gig) {
       return res.status(404).json({ message: 'Gig not found' });
     }
@@ -24,25 +24,39 @@ exports.checkout = async (req, res) => {
       return res.status(400).json({ message: 'Gig is not approved for purchase' });
     }
 
-    // Create Stripe PaymentIntent
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: amount * 100, // Convert to paise (Stripe expects amount in smallest currency unit)
-      currency: 'inr', // Using INR currency
+    // Create Stripe Checkout Session
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price_data: {
+            currency: 'inr',
+            product_data: {
+              name: gig.title,
+              description: `Freelance service by ${gig.studentId?.name || 'Student'}`,
+            },
+            unit_amount: amount * 100, // Convert to paise
+          },
+          quantity: 1,
+        },
+      ],
+      mode: 'payment',
+      success_url: `${process.env.CLIENT_URL}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.CLIENT_URL}/gig/${gigId}`,
       metadata: {
         gigId: gigId,
         clientId: req.user._id.toString(),
-        studentId: gig.studentId.toString(),
+        studentId: gig.studentId._id.toString(),
         instructions: instructions || '',
+        deadline: deadline || '',
+        contactInfo: contactInfo || '',
       },
-      description: `Payment for gig: ${gig.title}`,
     });
 
     res.status(200).json({
       success: true,
-      clientSecret: paymentIntent.client_secret,
-      paymentIntentId: paymentIntent.id,
-      amount: paymentIntent.amount,
-      currency: paymentIntent.currency,
+      sessionId: session.id,
+      url: session.url,
     });
   } catch (err) {
     console.error('Stripe checkout error:', err);
@@ -50,25 +64,24 @@ exports.checkout = async (req, res) => {
   }
 };
 
-// Confirm payment and create order
+// Confirm payment and create order after successful Stripe payment
 exports.confirmPayment = async (req, res) => {
   try {
-    const {
-      paymentIntentId,
-      gigId,
-      instructions,
-    } = req.body;
+    const { sessionId } = req.body;
 
-    // Retrieve the payment intent from Stripe
-    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+    if (!sessionId) {
+      return res.status(400).json({ message: 'Session ID is required' });
+    }
 
-    if (paymentIntent.status !== 'succeeded') {
+    // Retrieve the checkout session from Stripe
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+    if (session.payment_status !== 'paid') {
       return res.status(400).json({ message: 'Payment not completed' });
     }
 
     // Extract metadata
-    const clientId = paymentIntent.metadata.clientId;
-    const studentId = paymentIntent.metadata.studentId;
+    const { gigId, clientId, studentId, instructions, deadline, contactInfo } = session.metadata;
 
     // Verify gig exists
     const gig = await Gig.findById(gigId);
@@ -76,19 +89,30 @@ exports.confirmPayment = async (req, res) => {
       return res.status(404).json({ message: 'Gig not found' });
     }
 
+    // Check if order already exists for this session (prevent duplicate orders)
+    const existingOrder = await Order.findOne({ paymentId: sessionId });
+    if (existingOrder) {
+      return res.status(200).json({
+        success: true,
+        message: 'Order already exists',
+        order: existingOrder,
+      });
+    }
+
     // Calculate deadline
-    const deadline = new Date();
-    deadline.setDate(deadline.getDate() + gig.deliveryTime);
+    const orderDeadline = deadline && deadline !== '' 
+      ? new Date(deadline) 
+      : new Date(Date.now() + gig.deliveryTime * 24 * 60 * 60 * 1000);
 
     // Create the order in your database
     const newOrder = await Order.create({
       gigId,
       clientId,
       studentId,
-      instructions: instructions || paymentIntent.metadata.instructions,
-      price: paymentIntent.amount / 100, // Convert back from paise
-      deadline,
-      paymentId: paymentIntentId,
+      instructions: instructions || '',
+      price: session.amount_total / 100, // Convert back from paise
+      deadline: orderDeadline,
+      paymentId: sessionId,
       status: 'booked',
     });
 

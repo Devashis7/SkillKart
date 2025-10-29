@@ -11,13 +11,15 @@ const orderSchema = new mongoose.Schema({
     url: String,
     public_id: String
   }],
+  deliveryMessage: { type: String, maxlength: 1000 },
   status: {
     type: String,
     enum: ['booked', 'accepted', 'in_progress', 'in_review', 'revision_requested', 'completed', 'cancelled'],
     default: 'booked'
   },
   requestedRevisionCount: { type: Number, default: 0 },
-  paymentId: { type: String, required: true }, // Razorpay payment ID
+  paymentId: { type: String, required: true }, // Stripe payment ID
+  hasReviewedClient: { type: Boolean, default: false }, // Track if student has reviewed the client
 }, { timestamps: true });
 
 module.exports = mongoose.model('Order', orderSchema);

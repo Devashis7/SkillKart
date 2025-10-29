@@ -7,7 +7,18 @@ const Notification = require('../models/Notification');
 // @access  Private (Student only)
 exports.createGig = async (req, res) => {
   try {
-    const { title, description, price, category, deliveryTime, sampleFiles } = req.body;
+    console.log('Request body:', req.body);
+    console.log('Uploaded files:', req.files);
+    
+    const { title, description, price, category, deliveryTime } = req.body;
+
+    // Validation
+    if (!title || !description || !price || !category || !deliveryTime) {
+      return res.status(400).json({ 
+        message: 'All fields are required',
+        missing: { title: !title, description: !description, price: !price, category: !category, deliveryTime: !deliveryTime }
+      });
+    }
 
     // req.user.id is available from the auth middleware
     const studentId = req.user.id;
@@ -17,19 +28,30 @@ exports.createGig = async (req, res) => {
       return res.status(403).json({ message: 'Only students can create gigs' });
     }
 
-    const gig = await Gig.create({
+    // Process uploaded files
+    const sampleFiles = req.files ? req.files.map(file => ({
+      url: file.path,
+      public_id: file.filename
+    })) : [];
+
+    const gigData = {
       studentId,
       title,
       description,
-      price,
+      price: parseFloat(price),
       category,
-      deliveryTime,
-      sampleFiles: sampleFiles || [], // Assuming sampleFiles are already uploaded to Cloudinary and URLs are provided
+      deliveryTime: parseInt(deliveryTime),
+      sampleFiles,
       status: 'pending', // Gigs start as pending for admin approval
-    });
+    };
+
+    console.log('Creating gig with data:', gigData);
+
+    const gig = await Gig.create(gigData);
 
     res.status(201).json({ success: true, gig });
   } catch (err) {
+    console.error('Error creating gig:', err);
     res.status(500).json({ message: 'Error creating gig', error: err.message });
   }
 };
@@ -71,6 +93,14 @@ exports.getGigs = async (req, res) => {
       .limit(parseInt(limit));
 
     const totalGigs = await Gig.countDocuments(filter);
+
+    console.log(`Found ${gigs.length} gigs with filter:`, filter);
+    console.log('Gig ratings:', gigs.map(g => ({ 
+      id: g._id, 
+      title: g.title, 
+      averageRating: g.averageRating, 
+      reviewCount: g.reviewCount 
+    })));
 
     res.status(200).json({
       success: true,
@@ -168,6 +198,110 @@ exports.updateGigStatus = async (req, res) => {
     res.status(200).json({ success: true, gig });
   } catch (err) {
     res.status(500).json({ message: 'Error updating gig status', error: err.message });
+  }
+};
+
+// @desc    Get all gigs for admin (including pending ones)
+// @route   GET /api/admin/gigs
+// @access  Private (Admin only)
+exports.getAdminGigs = async (req, res) => {
+  try {
+    const { status, page = 1, limit = 20 } = req.query;
+    let filter = {};
+
+    if (status) {
+      filter.status = status;
+    }
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    const gigs = await Gig.find(filter)
+      .populate('studentId', 'name email profilePic') // Populate student details
+      .sort({ createdAt: -1 }) // Most recent first
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    const totalGigs = await Gig.countDocuments(filter);
+
+    console.log(`Admin fetched ${gigs.length} gigs with filter:`, filter);
+
+    res.status(200).json({
+      success: true,
+      count: gigs.length,
+      total: totalGigs,
+      page: parseInt(page),
+      pages: Math.ceil(totalGigs / parseInt(limit)),
+      gigs,
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching admin gigs', error: err.message });
+  }
+};
+
+// @desc    Get student's own gigs (including pending)
+// @route   GET /api/gigs/my-gigs
+// @access  Private (Student only)
+exports.getMyGigs = async (req, res) => {
+  try {
+    const studentId = req.user.id;
+    const { status, page = 1, limit = 20 } = req.query;
+    
+    // Verify user is a student
+    const user = await User.findById(studentId);
+    if (!user || user.role !== 'student') {
+      return res.status(403).json({ message: 'Only students can access this endpoint' });
+    }
+
+    let filter = { studentId };
+
+    // Filter by status if provided
+    if (status) {
+      filter.status = status;
+    }
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    const gigs = await Gig.find(filter)
+      .sort({ createdAt: -1 }) // Most recent first
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    const totalGigs = await Gig.countDocuments(filter);
+
+    console.log(`Student ${studentId} fetched ${gigs.length} of their own gigs`);
+
+    res.status(200).json({
+      success: true,
+      count: gigs.length,
+      total: totalGigs,
+      page: parseInt(page),
+      pages: Math.ceil(totalGigs / parseInt(limit)),
+      gigs,
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching student gigs', error: err.message });
+  }
+};
+
+// @desc    Get gig for editing (owner only, any status)
+// @route   GET /api/gigs/:id/edit-details
+// @access  Private (Student owner only)
+exports.getGigForEdit = async (req, res) => {
+  try {
+    const gig = await Gig.findById(req.params.id).populate('studentId', 'name profilePic averageStudentRating');
+
+    if (!gig) {
+      return res.status(404).json({ message: 'Gig not found' });
+    }
+
+    // Check if the logged-in user is the owner of the gig
+    if (gig.studentId._id.toString() !== req.user.id) {
+      return res.status(403).json({ message: 'You can only edit your own gigs' });
+    }
+
+    res.status(200).json({ success: true, gig });
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching gig for editing', error: err.message });
   }
 };
 

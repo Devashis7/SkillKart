@@ -48,6 +48,7 @@ exports.createOrder = async (req, res) => {
 };
 const Order = require('../models/Order');
 const Gig = require('../models/Gig');
+const User = require('../models/User');
 const Notification = require('../models/Notification');
 
 // @desc    Get orders for a student
@@ -86,9 +87,52 @@ exports.getClientOrders = async (req, res) => {
       .populate('gigId', 'title price deliveryTime')
       .populate('studentId', 'name profilePic');
 
-    res.status(200).json({ success: true, count: orders.length, orders });
+    // Check if each order has been reviewed
+    const Review = require('../models/Review');
+    const ordersWithReviewStatus = await Promise.all(
+      orders.map(async (order) => {
+        const review = await Review.findOne({ orderId: order._id });
+        return {
+          ...order.toObject(),
+          hasReviewed: !!review
+        };
+      })
+    );
+
+    res.status(200).json({ success: true, count: ordersWithReviewStatus.length, orders: ordersWithReviewStatus });
   } catch (err) {
     res.status(500).json({ message: 'Error fetching client orders', error: err.message });
+  }
+};
+
+// @desc    Get specific order by ID
+// @route   GET /api/orders/:id
+// @access  Private (Order participants or admin)
+exports.getOrderById = async (req, res) => {
+  try {
+    const orderId = req.params.id;
+
+    const order = await Order.findById(orderId)
+      .populate('gigId', 'title price deliveryTime category revisions')
+      .populate('studentId', 'name email profilePic')
+      .populate('clientId', 'name email profilePic');
+
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    // Check if user is authorized to view this order
+    const isAuthorized = req.user.role === 'admin' || 
+                        req.user.id === order.studentId._id.toString() || 
+                        req.user.id === order.clientId._id.toString();
+
+    if (!isAuthorized) {
+      return res.status(403).json({ message: 'Not authorized to view this order' });
+    }
+
+    res.status(200).json({ success: true, order });
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching order details', error: err.message });
   }
 };
 
@@ -201,8 +245,8 @@ exports.updateOrderStatus = async (req, res) => {
 // @access  Private (Student owner only)
 exports.uploadDelivery = async (req, res) => {
   try {
-    const { deliveryFiles } = req.body; // Array of { url, public_id } from Cloudinary upload
     const orderId = req.params.id;
+    const { message } = req.body; // Optional delivery message
 
     let order = await Order.findById(orderId).populate('gigId', 'title');
 
@@ -218,7 +262,20 @@ exports.uploadDelivery = async (req, res) => {
       return res.status(400).json({ message: 'Order is not in a state to accept delivery (must be in_progress or revision_requested)' });
     }
 
-    order.deliveryFiles = deliveryFiles; // Store Cloudinary URLs and public_ids
+    // Process uploaded files from Cloudinary
+    const deliveryFiles = req.files ? req.files.map(file => ({
+      url: file.path, // Cloudinary URL
+      public_id: file.filename // Cloudinary public_id
+    })) : [];
+
+    if (deliveryFiles.length === 0) {
+      return res.status(400).json({ message: 'At least one delivery file is required' });
+    }
+
+    order.deliveryFiles = deliveryFiles;
+    if (message && message.trim()) {
+      order.deliveryMessage = message.trim();
+    }
     order.status = 'in_review';
     order = await order.save();
 
@@ -226,12 +283,13 @@ exports.uploadDelivery = async (req, res) => {
     await Notification.create({
       userId: order.clientId,
       type: 'delivery_submitted',
-      message: `Student has delivered work for your order on gig \'${order.gigId.title}\'.`,
+      message: `Student has delivered work for your order on gig '${order.gigId.title}'.`,
       link: `/client/orders/${order._id}`,
     });
 
     res.status(200).json({ success: true, order });
   } catch (err) {
+    console.error('Upload delivery error:', err);
     res.status(500).json({ message: 'Error uploading delivery files', error: err.message });
   }
 };
@@ -275,5 +333,88 @@ exports.requestRevision = async (req, res) => {
     res.status(200).json({ success: true, order, message: 'Revision requested successfully' });
   } catch (err) {
     res.status(500).json({ message: 'Error requesting revision', error: err.message });
+  }
+};
+
+// @desc    Get all orders for Admin with search and filter
+// @route   GET /api/orders/admin/all?search=&status=&page=1
+// @access  Private (Admin only)
+exports.getAdminOrders = async (req, res) => {
+  try {
+    const { search, status, page = 1, limit = 10 } = req.query;
+    let filter = {};
+
+    if (search) {
+      // Search in gig title or student/client name
+      const gigIds = await Gig.find({ 
+        title: { $regex: search, $options: 'i' } 
+      }).distinct('_id');
+
+      const userIds = await User.find({
+        $or: [
+          { name: { $regex: search, $options: 'i' } },
+          { email: { $regex: search, $options: 'i' } }
+        ]
+      }).distinct('_id');
+
+      filter.$or = [
+        { gigId: { $in: gigIds } },
+        { studentId: { $in: userIds } },
+        { clientId: { $in: userIds } }
+      ];
+    }
+
+    if (status) {
+      filter.status = status;
+    }
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    const orders = await Order.find(filter)
+      .populate('gigId', 'title category price')
+      .populate('studentId', 'name email profilePic')
+      .populate('clientId', 'name email profilePic')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    const totalOrders = await Order.countDocuments(filter);
+
+    res.status(200).json({
+      success: true,
+      count: orders.length,
+      total: totalOrders,
+      page: parseInt(page),
+      pages: Math.ceil(totalOrders / parseInt(limit)),
+      orders
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching orders for admin', error: err.message });
+  }
+};
+
+// @desc    Get total orders count for stats
+// @route   GET /api/orders/admin/stats
+// @access  Private (Admin only)
+exports.getOrderStats = async (req, res) => {
+  try {
+    const totalOrders = await Order.countDocuments();
+    const pendingOrders = await Order.countDocuments({ status: 'booked' });
+    const completedOrders = await Order.countDocuments({ status: 'completed' });
+    const inProgressOrders = await Order.countDocuments({ 
+      status: { $in: ['accepted', 'in_progress', 'in_review'] } 
+    });
+
+    res.status(200).json({
+      success: true,
+      stats: {
+        totalOrders,
+        pendingOrders,
+        completedOrders,
+        inProgressOrders
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching order stats', error: err.message });
   }
 };
