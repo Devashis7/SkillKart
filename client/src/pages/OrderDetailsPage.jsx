@@ -48,27 +48,21 @@ const OrderDetailsPage = () => {
   const submitDelivery = async () => {
     try {
       setActionLoading(true);
-      const formData = new FormData();
       
-      deliveryFiles.forEach(file => {
-        formData.append('deliveryFiles', file);
-      });
-      
-      if (deliveryMessage.trim()) {
-        formData.append('message', deliveryMessage);
+      if (deliveryFiles.length === 0) {
+        setError('Please select at least one file to upload');
+        setActionLoading(false);
+        return;
       }
 
-      await api.post(`/orders/${id}/delivery`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      // Use the uploadDelivery method from api service
+      await api.uploadDelivery(id, deliveryFiles);
 
       await fetchOrderDetails();
       setDeliveryFiles([]);
       setDeliveryMessage('');
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to submit delivery');
+      setError(err.message || 'Failed to submit delivery');
     } finally {
       setActionLoading(false);
     }
