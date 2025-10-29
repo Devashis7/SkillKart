@@ -3,6 +3,7 @@ services:
     name: skillkart-api
     runtime: node
     rootDir: server
+    plan: free
     buildCommand: npm install
     startCommand: npm run start
     envVars:
