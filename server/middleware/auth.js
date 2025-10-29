@@ -10,6 +10,8 @@ module.exports = async (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = await User.findById(decoded.id).select('-password');
+    // Add id property for compatibility
+    req.user.id = req.user._id.toString();
     next();
   } catch {
     res.status(401).json({ message: 'Unauthorized, invalid token' });

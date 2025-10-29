@@ -1,13 +1,13 @@
 # SkillKart - AI Coding Agent Instructions
 
 ## Project Overview
-SkillKart is a MERN stack freelancing platform connecting student freelancers with clients (peers, faculty, startups). It's a complete marketplace with gig management, order lifecycle, payments (Razorpay), reviews, and admin moderation.
+SkillKart is a MERN stack freelancing platform connecting student freelancers with clients (peers, faculty, startups). It's a complete marketplace with gig management, order lifecycle, payments (Stripe), reviews, and admin moderation.
 
 ## Architecture & Organization
 
 ### Three Core User Roles & Flows
 - **Students** (Freelancers): Create gigs → await approval → deliver work → get reviewed
-- **Clients** (Buyers): Browse gigs → book with instructions → pay (Razorpay) → review delivery
+- **Clients** (Buyers): Browse gigs → book with instructions → pay (Stripe) → review delivery
 - **Admins**: Approve/reject gigs → manage users → oversee order disputes
 
 ### Monorepo Structure
@@ -105,10 +105,10 @@ router.get('/me', auth, getMe); // auth middleware first
 - **Admin reviews** → status: `approved` (visible) or `rejected`
 - **Public browsing** → only `approved` gigs shown
 
-### Payment Integration (Razorpay)
-- **Checkout**: `POST /api/payment/checkout` → create Razorpay order
+### Payment Integration (Stripe)
+- **Checkout**: `POST /api/payment/checkout` → create Stripe order
 - **Verification**: `POST /api/payment/verify` → verify payment → create Order with `booked` status
-- **Test Mode**: Use Razorpay test credentials in development
+- **Test Mode**: Use Stripe test credentials in development
 
 ### File Upload Integration
 - **Cloudinary**: Pre-configured storage in `config/cloudinary.js`
@@ -172,14 +172,14 @@ npm run server       # Backend only (nodemon server.js)
 - `PUT /api/gigs/:id` - Student edit own gig
 
 ### Order Lifecycle
-- `POST /api/orders/` - Create after Razorpay verification (status: `booked`)
+- `POST /api/orders/` - Create after Stripe verification (status: `booked`)
 - `GET /api/orders/student/:id` & `/api/orders/client/:id` - Role-based order views
 - `PATCH /api/orders/:id/status` - Update order status through lifecycle
 - `POST /api/orders/:id/delivery` - Student upload work (→ `in_review`)
 - `PATCH /api/orders/:id/request-revision` - Client request changes
 
-### Payment Integration (Razorpay)
-- `POST /api/payment/checkout` - Create Razorpay order
+### Payment Integration (Stripe)
+- `POST /api/payment/checkout` - Create Stripe order
 - `POST /api/payment/verify` - Verify payment → create Order with `booked` status
 
 ### Review System

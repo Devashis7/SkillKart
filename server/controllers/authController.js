@@ -1,10 +1,22 @@
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const nodemailer = require('nodemailer');
 const User = require('../models/User');
 const { OAuth2Client } = require('google-auth-library');
 
 // Initialize Google OAuth client
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+// Configure email transporter
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST,
+  port: process.env.SMTP_PORT,
+  secure: false, // true for 465, false for other ports
+  auth: {
+    user: process.env.SMTP_EMAIL,
+    pass: process.env.SMTP_PASSWORD,
+  },
+});
 
 const generateToken = userId =>
   jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: '30d' });
@@ -83,10 +95,38 @@ exports.requestPasswordReset = async (req, res) => {
     user.otpExpires = otpExpires;
     await user.save();
 
-    // In a real app, send OTP via email. For now, log to console.
-    console.log(`Password Reset OTP for ${email}: ${otp}`);
-
-    res.json({ message: 'OTP sent to your email (check console for demo)' });
+    // Send OTP via email
+    try {
+      await transporter.sendMail({
+        from: `"SkillKart" <${process.env.SMTP_EMAIL}>`,
+        to: email,
+        subject: 'Password Reset OTP - SkillKart',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #333;">Password Reset Request</h2>
+            <p>Hello,</p>
+            <p>You have requested to reset your password. Please use the following OTP to complete the process:</p>
+            <div style="background-color: #f4f4f4; padding: 20px; text-align: center; margin: 20px 0;">
+              <h1 style="color: #4F46E5; letter-spacing: 5px; margin: 0;">${otp}</h1>
+            </div>
+            <p>This OTP is valid for <strong>10 minutes</strong>.</p>
+            <p>If you did not request a password reset, please ignore this email.</p>
+            <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+            <p style="color: #666; font-size: 12px;">
+              This is an automated email from SkillKart. Please do not reply to this email.
+            </p>
+          </div>
+        `,
+      });
+      
+      console.log(`Password Reset OTP sent to ${email}: ${otp}`);
+      res.json({ message: 'OTP has been sent to your email. Please check your inbox.' });
+    } catch (emailError) {
+      console.error('Email sending failed:', emailError);
+      // Still log to console as fallback
+      console.log(`Password Reset OTP for ${email}: ${otp}`);
+      res.json({ message: 'OTP generated but email sending failed. Check server console for OTP.' });
+    }
   } catch (err) {
     res.status(500).json({ message: 'Error requesting password reset', error: err.message });
   }
@@ -95,10 +135,15 @@ exports.requestPasswordReset = async (req, res) => {
 exports.resetPassword = async (req, res) => {
   try {
     const { email, otp, newPassword } = req.body;
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).select('+otp +otpExpires');
 
     if (!user) {
       return res.status(400).json({ message: 'Invalid email or OTP' });
+    }
+
+    // Check if OTP exists
+    if (!user.otp || !user.otpExpires) {
+      return res.status(400).json({ message: 'No OTP found. Please request a new one.' });
     }
 
     // Verify OTP and its expiry
