@@ -194,13 +194,19 @@ class ApiService {
     const formData = new FormData();
     files.forEach(file => formData.append('deliveryFiles', file));
 
-    return this.request(`/orders/${orderId}/delivery`, {
+    const token = localStorage.getItem('token');
+    const url = `${this.baseURL}/orders/${orderId}/delivery`;
+    
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
-        ...(localStorage.getItem('token') && { Authorization: `Bearer ${localStorage.getItem('token')}` })
+        ...(token && { Authorization: `Bearer ${token}` })
+        // DO NOT set Content-Type - browser will set it automatically for FormData
       },
       body: formData
     });
+
+    return this.handleResponse(response);
   }
 
   // Review methods
