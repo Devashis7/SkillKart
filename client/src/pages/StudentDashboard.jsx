@@ -121,9 +121,13 @@ const StudentDashboard = () => {
       case 'approved': return 'text-green-600 bg-green-100 dark:bg-green-900 dark:text-green-300';
       case 'pending': return 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900 dark:text-yellow-300';
       case 'rejected': return 'text-red-600 bg-red-100 dark:bg-red-900 dark:text-red-300';
-      case 'in_progress': return 'text-blue-600 bg-blue-100 dark:bg-blue-900 dark:text-blue-300';
+      case 'booked': return 'text-blue-600 bg-blue-100 dark:bg-blue-900 dark:text-blue-300';
+      case 'accepted': return 'text-cyan-600 bg-cyan-100 dark:bg-cyan-900 dark:text-cyan-300';
+      case 'in_progress': return 'text-indigo-600 bg-indigo-100 dark:bg-indigo-900 dark:text-indigo-300';
       case 'in_review': return 'text-purple-600 bg-purple-100 dark:bg-purple-900 dark:text-purple-300';
+      case 'revision_requested': return 'text-orange-600 bg-orange-100 dark:bg-orange-900 dark:text-orange-300';
       case 'completed': return 'text-green-600 bg-green-100 dark:bg-green-900 dark:text-green-300';
+      case 'cancelled': return 'text-red-600 bg-red-100 dark:bg-red-900 dark:text-red-300';
       default: return 'text-gray-600 bg-gray-100 dark:bg-gray-800 dark:text-gray-300';
     }
   };
@@ -286,6 +290,16 @@ const StudentDashboard = () => {
                           <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(order.status)}`}>
                             {order.status.replace('_', ' ')}
                           </span>
+                          {order.status === 'booked' && (
+                            <div className="text-xs text-red-500 dark:text-red-400 mt-1">
+                              Needs attention
+                            </div>
+                          )}
+                          {order.status === 'revision_requested' && (
+                            <div className="text-xs text-orange-500 dark:text-orange-400 mt-1">
+                              Action required
+                            </div>
+                          )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                           ₹{order.price?.toLocaleString() || 'N/A'}
@@ -565,6 +579,11 @@ const StudentDashboard = () => {
                               Needs attention
                             </div>
                           )}
+                          {order.status === 'revision_requested' && (
+                            <div className="text-xs text-orange-500 dark:text-orange-400 mt-1">
+                              Action required
+                            </div>
+                          )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm font-semibold text-gray-900 dark:text-white">
@@ -624,7 +643,7 @@ const StudentDashboard = () => {
 
             {/* Orders Summary */}
             {orders.length > 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                 <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
                   <div className="text-sm text-blue-600 dark:text-blue-400">New Orders</div>
                   <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">
@@ -635,6 +654,12 @@ const StudentDashboard = () => {
                   <div className="text-sm text-yellow-600 dark:text-yellow-400">In Progress</div>
                   <div className="text-2xl font-bold text-yellow-700 dark:text-yellow-300">
                     {orders.filter(o => ['accepted', 'in_progress'].includes(o.status)).length}
+                  </div>
+                </div>
+                <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg">
+                  <div className="text-sm text-orange-600 dark:text-orange-400">Revisions</div>
+                  <div className="text-2xl font-bold text-orange-700 dark:text-orange-300">
+                    {orders.filter(o => o.status === 'revision_requested').length}
                   </div>
                 </div>
                 <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
