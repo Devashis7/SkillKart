@@ -248,6 +248,11 @@ exports.uploadDelivery = async (req, res) => {
     const orderId = req.params.id;
     const { message } = req.body; // Optional delivery message
 
+    // Debug logging
+    console.log('Upload delivery request for order:', orderId);
+    console.log('Files received:', req.files ? req.files.length : 0);
+    console.log('Message:', message);
+
     let order = await Order.findById(orderId).populate('gigId', 'title');
 
     if (!order) {
@@ -268,8 +273,17 @@ exports.uploadDelivery = async (req, res) => {
       public_id: file.filename // Cloudinary public_id
     })) : [];
 
+    console.log('Processed delivery files:', deliveryFiles.length);
+
     if (deliveryFiles.length === 0) {
-      return res.status(400).json({ message: 'At least one delivery file is required' });
+      console.error('No files uploaded. req.files:', req.files);
+      return res.status(400).json({ 
+        message: 'At least one delivery file is required',
+        debug: {
+          filesReceived: req.files ? req.files.length : 0,
+          cloudinaryConfigured: !!(process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET)
+        }
+      });
     }
 
     order.deliveryFiles = deliveryFiles;
