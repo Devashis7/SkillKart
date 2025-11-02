@@ -639,8 +639,8 @@ This project is licensed under the ISC License - see the [LICENSE](LICENSE) file
 
 **Team Members:**
 - **Devashis Kumar** - Full Stack Developer
-- **Akshay Kumar** - Frontend Developer
-- **Rishikesh Kumar** - Backend Developer
+- **Akshay Kumar** - Backend Developer
+- **Rishikesh Kumar** - Frontend Developer
 
 ## 🙏 Acknowledgments
 
