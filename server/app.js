@@ -17,11 +17,14 @@ const app = express();
 const corsOptions = {
   origin: [
     process.env.CLIENT_URL,
+    'https://skill-kart-topaz.vercel.app',
     'http://localhost:5173',
     'http://localhost:5174',
     'http://localhost:3000'
   ],
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 };
 
 app.use(cors(corsOptions));
