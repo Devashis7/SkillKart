@@ -63,8 +63,8 @@ const Layout = ({ children }) => {
                   </a>
                 </li>
                 <li>
-                  <a href="/help" className="text-gray-600 dark:text-gray-400 hover:text-primary-500 transition-colors duration-200">
-                    Help Center
+                  <a href="/about" className="text-gray-600 dark:text-gray-400 hover:text-primary-500 transition-colors duration-200">
+                    About Us
                   </a>
                 </li>
                 <li>

@@ -112,7 +112,7 @@ const OrderDetailsPage = () => {
   };
 
   const canSubmitDelivery = () => {
-    return user?.role === 'student' && order?.status === 'in_progress';
+    return user?.role === 'student' && (order?.status === 'in_progress' || order?.status === 'revision_requested');
   };
 
   const canCompleteOrder = () => {
@@ -120,7 +120,10 @@ const OrderDetailsPage = () => {
   };
 
   const canRequestRevision = () => {
-    return user?.role === 'client' && order?.status === 'in_review';
+    const maxRevisions = 2;
+    return user?.role === 'client' && 
+           order?.status === 'in_review' && 
+           (order?.requestedRevisionCount || 0) < maxRevisions;
   };
 
   if (loading) {
@@ -251,6 +254,17 @@ const OrderDetailsPage = () => {
                     })}
                   </p>
                 </div>
+                {order.requestedRevisionCount > 0 && (
+                  <div>
+                    <p className="text-gray-500 dark:text-gray-400">Revisions Requested</p>
+                    <p className="font-medium text-gray-900 dark:text-white">
+                      {order.requestedRevisionCount} / 2
+                      {order.requestedRevisionCount >= 2 && (
+                        <span className="ml-2 text-xs text-orange-600 dark:text-orange-400">(Max reached)</span>
+                      )}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -269,12 +283,35 @@ const OrderDetailsPage = () => {
             {/* Delivery Section - For Students */}
             {user?.role === 'student' && canSubmitDelivery() && (
               <div className="card p-6">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Submit Delivery</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                  {order.status === 'revision_requested' ? 'Submit Revised Delivery' : 'Submit Delivery'}
+                </h3>
+                
+                {/* Show revision feedback if status is revision_requested */}
+                {order.status === 'revision_requested' && order.revisionFeedback && (
+                  <div className="mb-4 p-4 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg">
+                    <div className="flex items-start">
+                      <div className="flex-shrink-0">
+                        <svg className="h-5 w-5 text-orange-600 dark:text-orange-400" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <div className="ml-3 flex-1">
+                        <h4 className="text-sm font-semibold text-orange-800 dark:text-orange-300">
+                          Revision Requested by Client
+                        </h4>
+                        <p className="text-sm text-orange-700 dark:text-orange-400 mt-1">
+                          {order.revisionFeedback}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Delivery Files
+                      {order.status === 'revision_requested' ? 'Revised Delivery Files' : 'Delivery Files'}
                     </label>
                     <input
                       type="file"
@@ -315,7 +352,7 @@ const OrderDetailsPage = () => {
                     disabled={actionLoading || deliveryFiles.length === 0}
                     className="btn btn-primary disabled:opacity-50"
                   >
-                    {actionLoading ? 'Submitting...' : 'Submit Delivery'}
+                    {actionLoading ? 'Submitting...' : (order.status === 'revision_requested' ? 'Submit Revision' : 'Submit Delivery')}
                   </button>
                 </div>
               </div>
@@ -380,6 +417,15 @@ const OrderDetailsPage = () => {
                   >
                     Request Revision
                   </button>
+                )}
+
+                {/* Show message when max revisions reached */}
+                {user?.role === 'client' && order?.status === 'in_review' && (order?.requestedRevisionCount || 0) >= 2 && (
+                  <div className="p-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg">
+                    <p className="text-sm text-orange-700 dark:text-orange-400">
+                      ⚠️ Maximum revision limit (2) reached. Please accept or discuss with freelancer.
+                    </p>
+                  </div>
                 )}
 
                 {order.status === 'booked' && (
@@ -472,9 +518,12 @@ const OrderDetailsPage = () => {
       {showRevisionModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white dark:bg-gray-800 rounded-lg max-w-md w-full p-6">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
               Request Revision
             </h3>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+              Revisions used: {order?.requestedRevisionCount || 0} / 2
+            </p>
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
               Please provide detailed feedback explaining what changes you'd like the freelancer to make.
             </p>

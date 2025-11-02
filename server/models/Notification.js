@@ -20,7 +20,8 @@ const notificationSchema = new mongoose.Schema({
       'user_suspended',
       'admin_message',
       'new_review',
-      'contact_request'
+      'contact_request',
+      'contact_message'
     ],
     required: true
   },

@@ -1,245 +1,681 @@
-# SkillKart – Student Freelancing Marketplace (MERN)
+# 🚀 SkillKart - Student Freelancing Marketplace
 
-SkillKart is a full‑stack freelancing platform that connects student freelancers with clients (peers, faculty, startups). Students can publish gigs, get booked, deliver work, and get paid. Clients can browse approved gigs, pay securely via Stripe, and review the work. Admins moderate gigs and oversee disputes.
+A modern, full-stack freelancing platform designed specifically for students. Built with the MERN stack (MongoDB, Express.js, React, Node.js), this platform connects talented student freelancers with clients including peers, faculty, and startups. SkillKart offers a complete marketplace experience with gig management, secure payments, order lifecycle tracking, and admin moderation.
 
-> Monorepo: React + Vite + Tailwind (client) and Express + MongoDB + Mongoose (server). Run both with one command.
+## 🌐 Live Demo
 
-## Highlights
+- **🖥️ Frontend (Vercel)**: [https://skill-kart-topaz.vercel.app](https://skill-kart-topaz.vercel.app)
+- **⚡ Backend API (Render)**: [https://skillkart-api-5j34.onrender.com](https://skillkart-api-5j34.onrender.com)
 
-- Three roles and flows
-	- Students: create gigs → await admin approval → accept orders → deliver → get reviewed
-	- Clients: browse gigs → book via Stripe → track order → review delivery
-	- Admins: approve/reject gigs → manage users → oversee orders and notifications
-- Secure auth with JWT (30d) and role-based access
-- Payments with Stripe Checkout and post-payment order creation
-- Order lifecycle with status machine: booked → accepted → in_progress → in_review → completed (plus revision_requested, cancelled)
-- Bidirectional reviews (client ↔ student) and per-role ratings on profiles
-- File uploads to Cloudinary (profile pics, portfolio, order delivery files)
-- OTP-based password reset via email (SMTP)
-- CORS, Helmet, and logging (morgan) enabled by default
+> **Status**: ✅ **Fully Deployed & Operational**
 
-## Tech Stack
+[![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](https://opensource.org/licenses/ISC)
+[![Node.js Version](https://img.shields.io/badge/node-%3E%3D%2018.0.0-brightgreen)](https://nodejs.org/)
+[![React Version](https://img.shields.io/badge/react-19.0.0-blue)](https://reactjs.org/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-green)](https://www.mongodb.com/atlas)
+[![Stripe](https://img.shields.io/badge/Payments-Stripe-purple)](https://stripe.com/)
 
-- Frontend: React 19, Vite, Tailwind CSS
-- Backend: Node.js, Express 5, Mongoose 8
-- Database: MongoDB Atlas
-- Auth: JWT (Bearer)
-- Payments: Stripe Checkout
-- File Storage: Cloudinary via multer-storage-cloudinary
-- Email: Nodemailer (Gmail SMTP in dev)
+## ✨ Features
 
-## Repository Structure
+### 🎓 **Student Features (Freelancers)**
+- **Profile Management**: Create detailed profiles with skills, portfolio, and ratings
+- **Gig Creation**: Publish service offerings with descriptions, pricing, and delivery time
+- **Order Management**: Accept orders, track progress, and deliver work
+- **File Uploads**: Upload portfolio items and delivery files via Cloudinary
+- **Earnings Tracking**: Monitor completed orders and payment history
+- **Review System**: Build reputation through client reviews and ratings
+- **Real-time Notifications**: Stay updated on orders, messages, and admin actions
+- **Dashboard Analytics**: View performance metrics and order statistics
 
-```
-skillkart-mern/
-├── client/                    # React + Vite SPA
-│   ├── src/
-│   │   ├── components/        # Reusable UI components
-│   │   ├── context/           # React Context providers
-│   │   ├── hooks/             # Custom hooks
-│   │   ├── pages/             # Route-based pages
-│   │   ├── services/          # API client
-│   │   └── utils/
-│   └── vite.config.js
-├── server/                    # Express API
-│   ├── config/                # Cloudinary and other config
-│   ├── controllers/           # Route handlers & business logic
-│   ├── middleware/            # auth, authorize, upload
-│   ├── models/                # Mongoose schemas (User, Gig, Order, Review, Notification)
-│   ├── routes/                # Express routes (auth, users, gigs, orders, reviews, payment, notifications, contact)
-│   ├── app.js                 # Express app & middleware stack
-│   └── server.js              # Mongo connection & server start
-├── ORDER_MANAGEMENT_ANALYSIS.md
-├── STRIPE_INTEGRATION.md
-├── Testing.md
-└── package.json               # Root scripts (concurrently)
-```
+### 👨‍💼 **Client Features (Buyers)**
+- **Gig Browsing**: Explore services with advanced filters (category, price, rating, delivery time)
+- **Secure Checkout**: Pay safely using Stripe payment integration
+- **Order Tracking**: Monitor order status through complete lifecycle
+- **Direct Communication**: Contact freelancers before booking
+- **Delivery Review**: Request revisions or approve completed work
+- **Rating & Reviews**: Leave feedback for completed orders
+- **Order History**: Track all past and current orders
+- **Dispute Resolution**: Admin-mediated conflict resolution
 
-## Getting Started
+### 👨‍💻 **Admin Features**
+- **Gig Moderation**: Approve or reject student-created gigs
+- **User Management**: Full CRUD operations for user accounts
+- **Order Oversight**: Monitor and intervene in order disputes
+- **Platform Analytics**: Real-time statistics and insights
+- **Notification System**: Send platform-wide announcements
+- **Content Moderation**: Ensure quality and appropriate listings
+- **Suspension Controls**: Manage user account status
 
-### Prerequisites
+### 🎨 **Design & UX**
+- **Modern UI**: Clean, professional interface with Tailwind CSS
+- **Smooth Animations**: Framer Motion powered transitions
+- **Dark/Light Mode**: Toggle between themes for comfortable browsing
+- **Mobile-First**: Fully responsive design for all devices
+- **Accessibility**: WCAG compliant with proper contrast ratios
+- **Fast Performance**: Vite-powered development and optimized builds
 
-- Node.js 18+ and npm
-- A MongoDB Atlas database (or local MongoDB)
-- Stripe account (test mode is fine)
-- Cloudinary account
-- An SMTP provider for email (Gmail SMTP recommended for dev)
+## 🛠️ Technology Stack
 
-### 1) Clone and install
+### **Frontend (React Application)**
+- **React 19** - Modern UI library with hooks and context
+- **Vite** - Lightning-fast build tool and dev server
+- **TailwindCSS** - Utility-first CSS framework
+- **Framer Motion** - Smooth animations and transitions
+- **React Router Dom** - Client-side routing
+- **React Icons** - Comprehensive icon library
+- **Axios** - HTTP client for API requests
 
+### **Backend (Node.js API)**
+- **Node.js** - JavaScript runtime environment
+- **Express.js 5** - Fast, minimalist web framework
+- **MongoDB Atlas** - Cloud-hosted NoSQL database
+- **Mongoose 8** - Elegant MongoDB object modeling
+- **JSON Web Tokens** - Secure authentication (30-day expiration)
+- **bcryptjs** - Password hashing and security
+- **Stripe** - Payment processing integration
+- **Cloudinary** - Cloud-based file storage
+- **Nodemailer** - Email sending (OTP, notifications)
+
+### **Security & Middleware**
+- **Helmet** - Security headers
+- **Morgan** - HTTP request logging
+- **CORS** - Cross-origin resource sharing
+- **JWT Authentication** - Role-based access control
+- **Password Encryption** - bcrypt with salt rounds
+- **File Upload Security** - Validated multipart/form-data
+
+### **Development Tools**
+- **ESLint** - Code quality enforcement
+- **Nodemon** - Development auto-restart
+- **Concurrently** - Run multiple scripts simultaneously
+- **Git** - Version control
+
+## 📋 Prerequisites
+
+Before you begin, ensure you have the following installed:
+
+- **Node.js** (version 18.0.0 or higher)
+- **npm** (version 8.0.0 or higher)
+- **MongoDB Atlas Account** (for cloud database)
+- **Stripe Account** (for payment processing)
+- **Cloudinary Account** (for file storage)
+- **Git** (for version control)
+
+## 🚀 Quick Start
+
+### **💻 Local Development Setup**
+
+#### 1. **Clone the Repository**
 ```bash
 git clone https://github.com/Devashis7/SkillKart.git
 cd skillkart-mern
+```
 
-# Install root tools (concurrently)
+#### 2. **Install Dependencies**
+```bash
+# Install root dependencies
 npm install
 
-# Install backend deps
+# Install backend dependencies
 cd server && npm install
 
-# Install frontend deps
+# Install frontend dependencies
 cd ../client && npm install
 ```
 
-### 2) Environment variables
+#### 3. **Environment Setup**
 
-Create a `.env` file in `server/` with:
-
+Create a `.env` file in the `server` directory:
 ```env
-# Server
+# Server Configuration
 PORT=5000
-MONGO_URI=your_mongodb_connection_string
-JWT_SECRET=your_long_random_secret
+NODE_ENV=development
 
-# CORS (client origin)
+# Database Configuration
+MONGO_URI=mongodb+srv://your-username:your-password@cluster.mongodb.net/skillkart?retryWrites=true&w=majority
+
+# Security
+JWT_SECRET=your-super-secret-jwt-key-minimum-32-characters-long
+
+# CORS (Frontend URL)
 CLIENT_URL=http://localhost:5173
 
-# Stripe
-STRIPE_SECRET_KEY=sk_test_xxx
-# Optional when enabling webhooks later
-# STRIPE_WEBHOOK_SECRET=whsec_xxx
+# Stripe Payment Integration
+STRIPE_SECRET_KEY=sk_test_your_stripe_secret_key
+STRIPE_PUBLISHABLE_KEY=pk_test_your_stripe_publishable_key
 
-# Cloudinary
+# Cloudinary File Storage
 CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
 
-# SMTP (Gmail SMTP in dev)
+# Email Configuration (Gmail SMTP)
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=465
 SMTP_EMAIL=your_email@gmail.com
-SMTP_PASSWORD=your_app_password
+SMTP_PASSWORD=your_gmail_app_password
 ```
 
-Create a `.env` file in `client/` with:
-
+Create a `.env` file in the `client` directory:
 ```env
-# Client
-VITE_API_BASE_URL=http://localhost:5000/api
-VITE_STRIPE_PUBLISHABLE_KEY=pk_test_xxx
+# API Configuration
+VITE_API_BASE_URL=https://skillkart-api-5j34.onrender.com/api
+
+# Stripe Configuration
+VITE_STRIPE_PUBLISHABLE_KEY=pk_test_your_stripe_publishable_key
 ```
 
-### 3) Run in development
-
-From the repo root:
-
+#### 4. **Start Development**
 ```bash
-# Runs both servers (Express on 5000, Vite on 5173)
+# From the root directory - starts both client and server
 npm run dev
+
+# Access the application:
+# Frontend: http://localhost:5173
+# Backend API: http://localhost:5000/api
 ```
 
-Individual apps:
-
+#### 5. **Alternative: Run Separately**
 ```bash
-# Backend only
+# Backend only (from root)
 npm run server
 
-# Frontend only
+# Frontend only (from root)
 npm run client
 ```
 
-Once running:
-- API: http://localhost:5000/api
-- Web: http://localhost:5173
-
-## Deployment
-
-Deploy to production in minutes:
-- **Frontend** → Vercel (automatic builds from GitHub)
-- **Backend** → Render (one-click deploy with render.yaml)
-
-See **[DEPLOYMENT.md](./DEPLOYMENT.md)** for complete step-by-step instructions including:
-- Environment variable setup for production
-- One-click Render deployment via Blueprint
-- Vercel project configuration
-- CORS and domain setup
-- Troubleshooting common deployment issues
-
-Quick links:
-- [Deploy to Render](https://dashboard.render.com/select-repo?type=blueprint)
-- [Deploy to Vercel](https://vercel.com/new)
-
-## Core Concepts
-
-### Order lifecycle
+## 📁 Project Structure
 
 ```
-booked → accepted → in_progress → in_review → completed
-					 ↘ revision_requested ↗
-cancelled (terminal)
+skillkart-mern/
+├── client/                    # React frontend application
+│   ├── src/
+│   │   ├── components/        # Reusable UI components
+│   │   │   ├── Header.jsx
+│   │   │   ├── Layout.jsx
+│   │   │   ├── ProtectedRoute.jsx
+│   │   │   ├── ThemeToggle.jsx
+│   │   │   └── FilePreview.jsx
+│   │   ├── pages/            # Page components
+│   │   │   ├── HomePage.jsx
+│   │   │   ├── LoginPage.jsx
+│   │   │   ├── RegisterPage.jsx
+│   │   │   ├── BrowseGigsPage.jsx
+│   │   │   ├── GigDetailsPage.jsx
+│   │   │   ├── CreateGigPage.jsx
+│   │   │   ├── StudentDashboard.jsx
+│   │   │   ├── ClientDashboard.jsx
+│   │   │   ├── AdminDashboard.jsx
+│   │   │   └── OrderDetailsPage.jsx
+│   │   ├── context/          # React context providers
+│   │   │   ├── AuthContext.jsx
+│   │   │   └── ThemeContext.jsx
+│   │   ├── hooks/            # Custom React hooks
+│   │   ├── services/         # API service functions
+│   │   │   └── api.js
+│   │   └── utils/            # Helper functions
+│   ├── public/               # Static assets
+│   └── package.json          # Frontend dependencies
+├── server/                   # Node.js backend application
+│   ├── controllers/          # Request handlers & business logic
+│   │   ├── authController.js
+│   │   ├── userController.js
+│   │   ├── gigController.js
+│   │   ├── orderController.js
+│   │   ├── reviewController.js
+│   │   ├── paymentController.js
+│   │   └── notificationController.js
+│   ├── models/              # MongoDB schemas
+│   │   ├── User.js
+│   │   ├── Gig.js
+│   │   ├── Order.js
+│   │   ├── Review.js
+│   │   └── Notification.js
+│   ├── routes/              # API route definitions
+│   │   ├── auth.js
+│   │   ├── userRoutes.js
+│   │   ├── gigRoutes.js
+│   │   ├── orderRoutes.js
+│   │   ├── reviewRoutes.js
+│   │   ├── payment.js
+│   │   └── notificationRoutes.js
+│   ├── middleware/          # Custom middleware
+│   │   ├── auth.js         # JWT authentication
+│   │   ├── authorize.js    # Role-based authorization
+│   │   └── upload.js       # Cloudinary file upload
+│   ├── config/             # Configuration files
+│   │   └── cloudinary.js
+│   ├── app.js              # Express app configuration
+│   ├── server.js           # Server entry point & MongoDB connection
+│   └── package.json        # Backend dependencies
+├── docs/                   # Documentation files
+├── scripts/                # Utility scripts
+├── DEPLOYMENT.md           # Deployment guide
+├── STRIPE_INTEGRATION.md   # Stripe payment integration guide
+├── ORDER_MANAGEMENT_ANALYSIS.md  # Order lifecycle documentation
+├── Testing.md              # Testing guidelines
+├── README.md               # Project documentation
+└── package.json            # Root package configuration
 ```
 
-Each order stores: price, deadlines, requestedRevisionCount, paymentId, and status history via updates.
+## 🔧 Available Scripts
 
-### Gig approval workflow
+### **Root Level Scripts**
+```bash
+npm run dev          # Start both client and server concurrently
+npm run client       # Start frontend only (Vite dev server)
+npm run server       # Start backend only (Nodemon)
+npm run build        # Build client for production
+```
 
-- Student creates gig → status: pending
-- Admin approves/rejects
-- Only approved gigs appear in public browse/search
+### **Client Scripts** (from client/ directory)
+```bash
+npm run dev          # Start Vite development server
+npm run build        # Build for production
+npm run preview      # Preview production build
+npm run lint         # Run ESLint
+```
 
-### Authentication
+### **Server Scripts** (from server/ directory)
+```bash
+npm start            # Start production server
+npm run dev          # Start development server with Nodemon
+```
 
-- JWT issued on login/register, stored client-side, attached as `Authorization: Bearer <token>`
-- Protected routes use auth middleware in `server/middleware/auth.js`
+## 🔐 Authentication & Authorization
 
-### File uploads
+The platform implements JWT-based authentication with role-based access control:
 
-- Cloudinary integration via `multer-storage-cloudinary`
-- Profile pictures, gig portfolio files, and order deliveries follow the same upload pattern
+### **User Roles**
+- **Students**: Can create gigs, accept orders, deliver work, and earn money
+- **Clients**: Can browse gigs, place orders, request revisions, and leave reviews
+- **Admins**: Full platform access including user management and gig moderation
 
-## API Overview
+### **Security Features**
+- **JWT Tokens**: 30-day expiration with secure Bearer token authentication
+- **Password Hashing**: bcrypt with 10 salt rounds
+- **Protected Routes**: Middleware ensures authenticated access
+- **Role-Based Access**: Authorization middleware restricts admin-only actions
+- **Token Refresh**: Automatic token validation on each request
 
-Base URL: `http://localhost:5000/api`
+## 📊 Database Schema
 
-- Auth: `POST /auth/register`, `POST /auth/login`, `GET /auth/me`, `POST /auth/request-reset`, `POST /auth/reset-password`
-- Users: `GET /users/:id`, `PUT /users/update`, `POST /users/upload-profile-pic` (multipart), admin search/suspend
-- Gigs: `POST /gigs`, `GET /gigs`, `GET /gigs/:id`, `PUT /gigs/:id`, `PATCH /gigs/:id/status` (admin)
-- Orders: `POST /orders`, `GET /orders/student/:id`, `GET /orders/client/:id`, `GET /orders/:id`, `PATCH /orders/:id/status`, `POST /orders/:id/delivery`, `PATCH /orders/:id/request-revision`
-- Reviews: `POST /reviews` (client→student), `POST /reviews/client` (student→client), `GET /reviews/gig/:id`, `GET /reviews/for-student/:id`, `GET /reviews/for-client/:id`
-- Payments (Stripe): `POST /payment/checkout`, `POST /payment/confirm-payment`
-- Notifications: `GET /notifications`, `PATCH /notifications/:id/read` (plus admin endpoints)
-- Contact: `POST /contact`, `GET /contact/received`, `PATCH /contact/:id/read`
+### **User Model**
+```javascript
+{
+  name: String,
+  email: String (unique, indexed),
+  password: String (hashed),
+  role: Enum ["student", "client", "admin"],
+  profilePic: {
+    url: String,
+    public_id: String
+  },
+  bio: String,
+  skills: [String],
+  ratingAsStudent: Number,
+  reviewCountAsStudent: Number,
+  ratingAsClient: Number,
+  reviewCountAsClient: Number,
+  isActive: Boolean,
+  otp: String,
+  otpExpiry: Date,
+  createdAt: Date,
+  updatedAt: Date
+}
+```
 
-More details in:
+### **Gig Model**
+```javascript
+{
+  title: String,
+  description: String,
+  category: String,
+  price: Number,
+  deliveryTime: Number (days),
+  status: Enum ["pending", "approved", "rejected"],
+  student: ObjectId (ref: User),
+  portfolioFiles: [{
+    url: String,
+    public_id: String,
+    fileType: String
+  }],
+  rating: Number,
+  reviewCount: Number,
+  createdAt: Date,
+  updatedAt: Date
+}
+```
 
-- `STRIPE_INTEGRATION.md` – end-to-end flow and field mapping
-- `ORDER_MANAGEMENT_ANALYSIS.md` – lifecycle, edge cases and status machine
-- `Testing.md` – manual testing checklists and tips
+### **Order Model**
+```javascript
+{
+  gig: ObjectId (ref: Gig),
+  client: ObjectId (ref: User),
+  student: ObjectId (ref: User),
+  price: Number,
+  status: Enum ["booked", "accepted", "in_progress", "in_review", 
+                "completed", "cancelled", "revision_requested"],
+  clientInstructions: String,
+  deliveryFiles: [{
+    url: String,
+    public_id: String,
+    fileType: String
+  }],
+  deliveryNote: String,
+  requestedRevisionCount: Number,
+  revisionNote: String,
+  deadline: Date,
+  completedAt: Date,
+  paymentId: String,
+  createdAt: Date,
+  updatedAt: Date
+}
+```
 
-## Screenshots / Demo
+### **Review Model**
+```javascript
+{
+  gig: ObjectId (ref: Gig),
+  order: ObjectId (ref: Order),
+  reviewer: ObjectId (ref: User),
+  reviewee: ObjectId (ref: User),
+  reviewType: Enum ["client_to_student", "student_to_client"],
+  rating: Number (1-5),
+  comment: String,
+  createdAt: Date
+}
+```
 
-Add screenshots or a short demo GIF here (Home, Browse Gigs, Gig Details, Checkout, Order, Profile, Admin).
+### **Notification Model**
+```javascript
+{
+  recipient: ObjectId (ref: User),
+  type: Enum ["order_placed", "order_accepted", "delivery_submitted", 
+              "revision_requested", "order_completed", "gig_approved", 
+              "gig_rejected", "review_received"],
+  message: String,
+  relatedGig: ObjectId (ref: Gig),
+  relatedOrder: ObjectId (ref: Order),
+  isRead: Boolean,
+  createdAt: Date
+}
+```
 
-## Testing
+## 🔄 Order Lifecycle
 
-- Server has Jest + Supertest deps available; you can add tests under `server/`.
-- Manual testing flows are documented in `Testing.md` (auth, gig creation, checkout, orders, reviews, OTP reset).
+The platform features a comprehensive order management system:
 
-## Troubleshooting
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Order Status Flow                        │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  booked → accepted → in_progress → in_review → completed   │
+│                          ↓              ↓                   │
+│                    revision_requested  ← ┘                 │
+│                                                             │
+│  cancelled (can occur from booked, accepted, in_progress)  │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
 
-- CORS blocked: ensure `CLIENT_URL` matches the Vite origin (http://localhost:5173) and that the server is on 5000.
-- Invalid OTP: verify Gmail SMTP envs and that `otp` fields are selected in controller (already handled in code).
-- Stripe errors: confirm `STRIPE_SECRET_KEY` and that the publishable key is set on the client; use Stripe test cards.
-- Cloudinary upload fails: check cloud name/api key/secret; ensure multipart routes use the upload middleware.
-- Port already in use: change `PORT` or stop the process using 5000/5173.
+### **Order Statuses**
+1. **booked**: Order placed and payment completed
+2. **accepted**: Student accepted the order
+3. **in_progress**: Work is being completed
+4. **in_review**: Student submitted delivery, awaiting client review
+5. **revision_requested**: Client requested changes
+6. **completed**: Client approved delivery, payment released
+7. **cancelled**: Order cancelled by either party or admin
 
-## Roadmap (Next up)
+## 💳 Payment Integration (Stripe)
 
-- Quick Accept action for orders
-- OTP rate limiting and resend cooldown
-- Stripe webhook verification and idempotency keys
-- Notifications UI (unread count, mark-as-read), pagination for reviews
+### **Payment Flow**
+1. Client selects a gig and provides requirements
+2. Stripe Checkout session created with order details
+3. Client completes payment on Stripe's secure page
+4. Payment verification via Stripe API
+5. Order created with `booked` status
+6. Payment held until order completion
+7. Funds released to student upon client approval
 
-## Contributing
+### **Test Payments**
+Use Stripe test cards in development:
+- **Success**: 4242 4242 4242 4242
+- **Requires Authentication**: 4000 0025 0000 3155
+- **Declined**: 4000 0000 0000 9995
 
-1. Fork the repo and create a topic branch
-2. Run the app locally and add your changes with tests where relevant
-3. Open a PR with a clear description and screenshots for UI changes
+See `STRIPE_INTEGRATION.md` for detailed integration guide.
 
-## License
+## 🎨 Theme System
 
-ISC — see `package.json`.
+The platform features a comprehensive dark/light mode:
+
+- **ThemeContext**: React Context for global theme management
+- **LocalStorage**: Persists user's theme preference
+- **Tailwind Dark Mode**: Class-based dark mode with `dark:` variants
+- **Smooth Transitions**: Animated theme switching
+- **System Preference**: Optionally respects OS theme settings
+
+## 📧 Email System
+
+Nodemailer integration for transactional emails:
+
+- **OTP Password Reset**: Secure 6-digit OTP with expiration
+- **Order Notifications**: Updates on order status changes
+- **Gig Approval**: Notify students of moderation decisions
+- **Contact Form**: Receive and respond to user inquiries
+
+## 🧪 Testing
+
+### **Manual Testing**
+Comprehensive testing checklists available in `Testing.md`:
+- Authentication flows (register, login, password reset)
+- Gig creation and approval workflow
+- Order placement and payment processing
+- File upload functionality
+- Review and rating system
+
+### **Test Accounts**
+Create test accounts for each role:
+```bash
+# Student account
+POST /api/auth/register
+{
+  "name": "Test Student",
+  "email": "student@test.com",
+  "password": "password123",
+  "role": "student"
+}
+
+# Client account
+POST /api/auth/register
+{
+  "name": "Test Client",
+  "email": "client@test.com",
+  "password": "password123",
+  "role": "client"
+}
+```
+
+## 🚀 Deployment
+
+### **Production Deployment**
+
+#### **Frontend - Vercel**
+1. Push code to GitHub repository
+2. Import project in Vercel Dashboard
+3. Configure environment variables:
+   ```
+   VITE_API_BASE_URL=https://your-backend-api.onrender.com/api
+   VITE_STRIPE_PUBLISHABLE_KEY=pk_live_your_publishable_key
+   ```
+4. Deploy with automatic builds
+
+#### **Backend - Render**
+1. Create new Web Service on Render
+2. Connect GitHub repository
+3. Configure build settings:
+   - Build Command: `cd server && npm install`
+   - Start Command: `cd server && npm start`
+4. Add environment variables (all from server/.env)
+5. Deploy with Blueprint (render.yaml included)
+
+#### **Database - MongoDB Atlas**
+1. Create free cluster (512MB)
+2. Configure network access (allow all IPs for production)
+3. Create database user
+4. Copy connection string to MONGO_URI
+
+See `DEPLOYMENT.md` for complete deployment guide.
+
+## 🤝 Contributing
+
+We welcome contributions! Please follow these steps:
+
+1. **Fork the repository**
+2. **Create a feature branch** (`git checkout -b feature/amazing-feature`)
+3. **Commit your changes** (`git commit -m 'Add amazing feature'`)
+4. **Push to the branch** (`git push origin feature/amazing-feature`)
+5. **Open a Pull Request**
+
+### **Development Guidelines**
+- Follow existing code style and conventions
+- Write clear, descriptive commit messages
+- Test thoroughly before submitting PR
+- Update documentation as needed
+- Ensure responsive design for UI changes
+- Add comments for complex logic
+
+## 🐛 Troubleshooting
+
+### **Common Issues & Solutions**
+
+#### **CORS Errors**
+```bash
+# Ensure CLIENT_URL in server/.env matches frontend URL
+CLIENT_URL=http://localhost:5173
+
+# In production, set to your Vercel domain
+CLIENT_URL=https://skill-kart-topaz.vercel.app
+```
+
+#### **Authentication Issues**
+- Clear browser localStorage and cookies
+- Verify JWT_SECRET is set in server/.env
+- Check token expiration (30 days)
+- Ensure Authorization header format: `Bearer <token>`
+
+#### **Stripe Payment Failures**
+- Verify STRIPE_SECRET_KEY is correct
+- Use test cards in development mode
+- Check Stripe dashboard for error logs
+- Ensure CLIENT_URL matches for redirect
+
+#### **File Upload Problems**
+- Verify Cloudinary credentials
+- Check file size limits (default 5MB)
+- Ensure multipart/form-data header
+- Verify upload middleware is applied to routes
+
+#### **MongoDB Connection Issues**
+- Check MONGO_URI format and credentials
+- Verify MongoDB Atlas network access settings
+- Ensure database name is correct
+- Check for IP whitelist restrictions
+
+#### **Email Not Sending**
+- For Gmail: Use App Password, not regular password
+- Enable "Less secure app access" if needed
+- Check SMTP settings (host, port, credentials)
+- Verify email exists in logs but not delivered (spam folder)
+
+## 📚 Documentation
+
+- **[DEPLOYMENT.md](./DEPLOYMENT.md)** - Complete deployment guide
+- **[STRIPE_INTEGRATION.md](./STRIPE_INTEGRATION.md)** - Payment integration details
+- **[ORDER_MANAGEMENT_ANALYSIS.md](./ORDER_MANAGEMENT_ANALYSIS.md)** - Order lifecycle documentation
+- **[Testing.md](./Testing.md)** - Manual testing guidelines
+
+## 🗺️ Roadmap
+
+### **Completed Features** ✅
+- User authentication with JWT
+- Profile management with file uploads
+- Gig creation and moderation
+- Order management system
+- Stripe payment integration
+- Review and rating system
+- Admin dashboard
+- Email notifications
+- Dark/light mode
+
+### **In Progress** 🔨
+- Real-time chat system
+- Advanced search filters
+- User verification badges
+- Mobile app development
+
+### **Planned Features** 📋
+- Stripe webhook integration
+- Automated testing suite
+- Analytics dashboard
+- Referral program
+- Multi-language support
+- Advanced reporting
+- Wallet system
+- Subscription plans
+
+## 📝 License
+
+This project is licensed under the ISC License - see the [LICENSE](LICENSE) file for details.
+
+## 👨‍💻 Author
+
+**Devashis7**
+- GitHub: [@Devashis7](https://github.com/Devashis7)
+- Project: [SkillKart](https://github.com/Devashis7/SkillKart)
+
+**Team Members:**
+- **Devashis Kumar** - Full Stack Developer
+- **Akshay Kumar** - Frontend Developer
+- **Rishikesh Kumar** - Backend Developer
+
+## 🙏 Acknowledgments
+
+- **MERN Stack Community** - For excellent documentation and support
+- **Stripe** - For comprehensive payment integration
+- **Cloudinary** - For reliable file storage solution
+- **MongoDB Atlas** - For scalable database hosting
+- **TailwindCSS** - For beautiful utility-first CSS
+- **Framer Motion** - For smooth animations
+- **Open Source Community** - For inspiration and tools
+
+## 📞 Support
+
+If you encounter any issues or have questions:
+
+1. **📖 Check the documentation** in the `/docs` folder
+2. **🔍 Search existing issues** on GitHub
+3. **🐛 Create a new issue** with detailed information
+4. **💬 Join discussions** for community support
+
+### **Quick Links**
+- **📊 GitHub Repository**: [github.com/Devashis7/SkillKart](https://github.com/Devashis7/SkillKart)
+- **📧 Contact**: Open an issue on GitHub
+- **📚 Documentation**: See `/docs` folder
 
 ---
 
-Made with ❤️ by the SkillKart team. If you have questions or feature ideas, please open an issue.
+⭐ **Star this repository** if you find it helpful!
+
+🐛 **Found a bug?** Please open an issue with details.
+
+💡 **Have ideas?** We'd love to hear your suggestions!
+
+---
+
+**Built with ❤️ for the student freelancing community**
+
+*Empowering students to monetize their skills and connecting clients with talented young professionals.*

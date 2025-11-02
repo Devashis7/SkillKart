@@ -21,6 +21,9 @@ import HowItWorksPage from './pages/HowItWorksPage';
 import ProfilePage from './pages/ProfilePage';
 import OrderDetailsPage from './pages/OrderDetailsPage';
 import PaymentSuccessPage from './pages/PaymentSuccessPage';
+import ContactPage from './pages/ContactPage';
+import AboutPage from './pages/AboutPage';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 
 function App() {
   return (
@@ -38,6 +41,9 @@ function App() {
               <Route path="/gig/:id" element={<GigDetailsPage />} />
               <Route path="/gigs/:id" element={<GigDetailsPage />} />
               <Route path="/how-it-works" element={<HowItWorksPage />} />
+              <Route path="/contact" element={<ContactPage />} />
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/privacy" element={<PrivacyPolicyPage />} />
               <Route 
                 path="/payment-success" 
                 element={

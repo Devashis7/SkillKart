@@ -1,5 +1,6 @@
 const express = require('express');
 const { 
+  sendPublicContactMessage,
   createContactRequest, 
   getReceivedContactRequests, 
   markContactRequestAsRead 
@@ -7,6 +8,9 @@ const {
 const auth = require('../middleware/auth');
 const authorize = require('../middleware/authorize');
 const router = express.Router();
+
+// Public route (no auth required)
+router.post('/public', sendPublicContactMessage);
 
 // Client routes (require client role)
 router.post('/', auth, authorize(['client']), createContactRequest);

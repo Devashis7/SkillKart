@@ -333,6 +333,13 @@ class ApiService {
   }
 
   // Contact methods
+  async sendPublicContactMessage(messageData) {
+    return this.request('/contact/public', {
+      method: 'POST',
+      body: JSON.stringify(messageData)
+    });
+  }
+
   async createContactRequest(contactData) {
     return this.request('/contact', {
       method: 'POST',

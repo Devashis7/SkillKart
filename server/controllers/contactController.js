@@ -1,6 +1,61 @@
 const Notification = require('../models/Notification');
 const User = require('../models/User');
 
+// @desc    Send general contact message to admins (Public contact form)
+// @route   POST /api/contact/public
+// @access  Public
+exports.sendPublicContactMessage = async (req, res) => {
+  try {
+    const { name, email, subject, message } = req.body;
+
+    // Validate required fields
+    if (!name || !email || !subject || !message) {
+      return res.status(400).json({ 
+        message: 'Name, email, subject, and message are required' 
+      });
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: 'Invalid email format' });
+    }
+
+    // Find all admin users
+    const admins = await User.find({ role: 'admin' });
+    
+    if (admins.length === 0) {
+      return res.status(500).json({ message: 'No administrators found to receive the message' });
+    }
+
+    // Create notifications for all admins
+    const notificationPromises = admins.map(admin => 
+      Notification.create({
+        userId: admin._id,
+        type: 'contact_message',
+        message: `New contact message from ${name} (${email}): ${subject}`,
+        link: '/admin-dashboard',
+        metadata: {
+          senderName: name,
+          senderEmail: email,
+          subject,
+          message
+        }
+      })
+    );
+
+    await Promise.all(notificationPromises);
+
+    res.status(200).json({ 
+      success: true, 
+      message: 'Your message has been sent successfully. We will get back to you soon!' 
+    });
+  } catch (err) {
+    console.error('Error sending public contact message:', err);
+    res.status(500).json({ message: 'Error sending message. Please try again later.', error: err.message });
+  }
+};
+
 // @desc    Create a contact request from client to freelancer
 // @route   POST /api/contact
 // @access  Private (Client only)

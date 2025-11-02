@@ -146,9 +146,13 @@ const HomePage = () => {
             <div className="relative">
               <div className="w-full max-w-lg mx-auto">
                 <div className="relative">
-                  {/* Placeholder for hero image */}
-                  <div className="aspect-square bg-gradient-to-br from-primary-400 to-indigo-500 rounded-2xl shadow-2xl flex items-center justify-center">
-                    <div className="text-white text-6xl font-bold">SK</div>
+                  {/* Hero Image */}
+                  <div className="aspect-square rounded-2xl shadow-2xl overflow-hidden">
+                    <img 
+                      src="/Gemini_Generated_Image_lb47ylb47ylb47yl.png" 
+                      alt="SkillKart - Student Freelancing Platform" 
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                   
                   {/* Floating cards */}

@@ -18,6 +18,7 @@ const orderSchema = new mongoose.Schema({
     default: 'booked'
   },
   requestedRevisionCount: { type: Number, default: 0 },
+  revisionFeedback: { type: String, maxlength: 1000 }, // Latest revision feedback from client
   paymentId: { type: String, required: true }, // Stripe payment ID
   hasReviewedClient: { type: Boolean, default: false }, // Track if student has reviewed the client
 }, { timestamps: true });

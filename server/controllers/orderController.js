@@ -316,6 +316,10 @@ exports.requestRevision = async (req, res) => {
     const { feedback } = req.body;
     const orderId = req.params.id;
 
+    if (!feedback || feedback.trim() === '') {
+      return res.status(400).json({ message: 'Revision feedback is required' });
+    }
+
     let order = await Order.findById(orderId).populate('gigId', 'title');
 
     if (!order) {
@@ -330,10 +334,14 @@ exports.requestRevision = async (req, res) => {
       return res.status(400).json({ message: 'Cannot request revision unless order is in_review' });
     }
 
+    // Enforce max 2 revisions
+    if (order.requestedRevisionCount >= 2) {
+      return res.status(400).json({ message: 'Maximum revision limit (2) reached for this order' });
+    }
+
     order.status = 'revision_requested';
     order.requestedRevisionCount += 1;
-    // You might want to store revision feedback somewhere, e.g., in an array of objects in the Order model
-    // For v1, we'll just update status and count
+    order.revisionFeedback = feedback; // Store the latest revision feedback
     order = await order.save();
 
     // Notify student about revision request

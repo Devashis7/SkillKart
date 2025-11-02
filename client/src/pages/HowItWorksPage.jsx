@@ -343,12 +343,12 @@ const HowItWorksPage = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 bg-primary-600 dark:bg-primary-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">
+      <section className="py-16 lg:py-24 bg-primary-50 dark:bg-gray-900">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-4">
             Ready to Get Started?
           </h2>
-          <p className="text-xl text-primary-100 mb-8 max-w-2xl mx-auto">
+          <p className="text-lg text-gray-600 dark:text-gray-300 mb-8">
             Join thousands of students and clients already using SkillKart to achieve their goals.
           </p>
           
@@ -356,13 +356,13 @@ const HowItWorksPage = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 to="/register"
-                className="bg-white text-primary-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors duration-200"
+                className="btn-primary text-center inline-block"
               >
                 Join as Student
               </Link>
               <Link
                 to="/register"
-                className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-primary-600 transition-colors duration-200"
+                className="btn-secondary text-center inline-block"
               >
                 Join as Client
               </Link>
@@ -373,13 +373,13 @@ const HowItWorksPage = () => {
                 <>
                   <Link
                     to="/gigs/create"
-                    className="bg-white text-primary-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors duration-200"
+                    className="btn-primary text-center inline-block"
                   >
                     Create Your First Gig
                   </Link>
                   <Link
                     to="/student-dashboard"
-                    className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-primary-600 transition-colors duration-200"
+                    className="btn-secondary text-center inline-block"
                   >
                     Go to Dashboard
                   </Link>
@@ -389,13 +389,13 @@ const HowItWorksPage = () => {
                 <>
                   <Link
                     to="/gigs"
-                    className="bg-white text-primary-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors duration-200"
+                    className="btn-primary text-center inline-block"
                   >
                     Browse Gigs
                   </Link>
                   <Link
                     to="/client-dashboard"
-                    className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-primary-600 transition-colors duration-200"
+                    className="btn-secondary text-center inline-block"
                   >
                     Go to Dashboard
                   </Link>
@@ -404,7 +404,7 @@ const HowItWorksPage = () => {
               {user?.role === 'admin' && (
                 <Link
                   to="/admin-dashboard"
-                  className="bg-white text-primary-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors duration-200"
+                  className="btn-primary text-center inline-block"
                 >
                   Go to Admin Dashboard
                 </Link>
